@@ -59,5 +59,52 @@ from discounts natural join stores;
 
 -- 1. Da es NULL-Werte hat
 
+select title, price
+from titles
+where price >= ALL (SELECT price FROM titles where price is not null);
+
 SELECT title, price FROM titles
 WHERE price >= SOME (SELECT price FROM titles WHERE type='psychology');
+
+select au_lname, au_fname, state
+from authors
+where state not in (select state from stores);
+
+-- Aufgabe 3 (ORDER BY, GROUP BY, HAVING)
+-- 1. Geben Sie einen SQL Ausdruck an, der die Bücher nach Preis absteigend sortiert ausgibt (die teuersten Bücher zuerst).
+-- 2. Geben Sie einen SQL Ausdruck an, der die Autoren primär absteigend nach Staat und dann aufsteigend nach Stadt und Name sortiert ausgibt.
+-- 3. Geben Sie einen SQL Ausdruck an, der die Bücherarten zusammen mit der Anzahl Bücher jeder Art ausgibt.
+-- 4. Geben Sie einen SQL Ausdruck an, der die Anzahl Autoren pro Staat auflistet, wobei die Ausgabe nach Anzahl Autoren sortiert sein soll.
+-- 5. Geben Sie einen SQL Ausdruck an, der die Bücherarten auflistet, von denen es mehr als 2 verschiedene Bücher gibt.
+-- 6. Bestimmen Sie alle Publisher, welche weniger Bücher herausgegeben haben als der Durchschnitt.
+
+select *
+from titles
+order by price desc;
+
+select *
+from authors
+order by state desc, city asc, au_lname asc;
+
+select type, count(title_id)
+from titles
+group by type;
+
+select state, count(au_id) as anz_autoren
+from authors
+group by state
+order by anz_autoren desc;
+
+select type, count(title_id) as anz_title
+from titles
+group by type
+having anz_title > 2;
+
+select pub_name
+from titles natural join publishers
+group by titles.pub_id
+having count(title_id) < (
+	select avg(c) from (
+		select count(*) as c from titles group by pub_id
+		)
+	);
